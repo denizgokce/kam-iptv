@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KAM IPTV — IPTV player for Mac, Windows, Android and Android TV</title>
+<meta name="description" content="KAM IPTV is a free-to-download IPTV player for macOS, Windows, Android phones, tablets and Android TV. Bring your own playlist.">
+<meta property="og:title" content="KAM IPTV">
+<meta property="og:description" content="An IPTV player for Mac, Windows, Android and Android TV. Bring your own playlist.">
+<meta property="og:image" content="https://denizgokce.github.io/kam-iptv/assets/icon-256.png">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#1c1c1e">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<style>
+  :root {
+    --bg: #1c1c1e;
+    --bg-2: #222222;
+    --surface: #2a2a2c;
+    --surface-2: #343437;
+    --line: rgb(255 255 255 / 9%);
+    --text: #f5f5f7;
+    --text-2: rgb(235 235 245 / 70%);
+    --text-3: rgb(235 235 245 / 45%);
+    --accent: #138ffa;
+    --accent-2: #4aa8ff;
+    --ok: #30d158;
+    --radius: 18px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* Nav */
+  header.nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgb(28 28 30 / 72%);
+    backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav .wrap { display: flex; align-items: center; gap: 16px; height: 56px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+  .brand img { width: 28px; height: 28px; }
+  .brand:hover { text-decoration: none; }
+  .nav nav { margin-left: auto; display: flex; align-items: center; gap: 20px; font-size: 14px; }
+  .nav nav a { color: var(--text-2); }
+  .nav nav a:hover { color: var(--text); text-decoration: none; }
+  .lang { display: flex; gap: 2px; background: var(--surface); border-radius: 999px; padding: 3px; }
+  .lang button {
+    border: 0; background: none; color: var(--text-2); font: inherit; font-size: 12px; font-weight: 600;
+    padding: 4px 9px; border-radius: 999px; cursor: pointer;
+  }
+  .lang button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+  @media (max-width: 640px) { .nav nav a { display: none; } .nav nav { gap: 12px; } }
+  .card, .feature, .steps li { min-width: 0; }
+  .file > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+
+  /* Hero */
+  .hero { position: relative; overflow: hidden; padding: 88px 0 72px; text-align: center; }
+  .hero::before {
+    content: ""; position: absolute; inset: -40% -10% auto; height: 120%;
+    background:
+      radial-gradient(40% 50% at 30% 40%, rgb(19 143 250 / 28%), transparent 70%),
+      radial-gradient(35% 45% at 72% 35%, rgb(94 92 230 / 22%), transparent 70%);
+    pointer-events: none;
+  }
+  .hero > * { position: relative; }
+  .hero img.icon { width: 120px; height: 120px; filter: drop-shadow(0 18px 40px rgb(19 143 250 / 35%)); }
+  .hero h1 { font-size: clamp(40px, 7vw, 68px); line-height: 1.04; letter-spacing: -0.035em; margin: 18px 0 14px; }
+  .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); color: var(--text-2); max-width: 640px; margin: 0 auto; }
+  .cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 22px; border-radius: 999px;
+    font-weight: 600; font-size: 15px; color: var(--text); background: var(--surface-2); border: 1px solid var(--line);
+    transition: transform .15s ease, background .15s ease;
+  }
+  .btn:hover { text-decoration: none; background: #3d3d41; }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary { background: var(--accent); border-color: transparent; color: #fff; }
+  .btn.primary:hover { background: #2b9bff; }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn small { font-weight: 500; opacity: .75; }
+  .hint { margin-top: 14px; font-size: 13px; color: var(--text-3); }
+  .byo {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 8px 14px; border-radius: 999px;
+    background: rgb(255 255 255 / 6%); color: var(--text-2); font-size: 13px;
+  }
+
+  /* Sections */
+  section { padding: 64px 0; scroll-margin-top: 56px; }
+  section + section { border-top: 1px solid var(--line); }
+  h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 10px; }
+  .sub { color: var(--text-2); margin: 0 0 36px; max-width: 680px; }
+
+  /* Download cards */
+  .apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 20px; }
+  .card {
+    background: linear-gradient(180deg, var(--surface), var(--bg-2));
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 26px;
+    display: flex; flex-direction: column;
+  }
+  .card .head { display: flex; align-items: center; gap: 14px; }
+  .card .glyph {
+    width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; flex: none;
+    background: rgb(19 143 250 / 16%); color: var(--accent-2);
+  }
+  .card .glyph svg { width: 26px; height: 26px; }
+  .card h3 { margin: 0; font-size: 21px; letter-spacing: -0.02em; }
+  .card .platforms { color: var(--text-3); font-size: 13px; }
+  .card p { color: var(--text-2); font-size: 15px; margin: 14px 0 18px; }
+  .files { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+  .file {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px;
+    background: rgb(255 255 255 / 4%); border: 1px solid var(--line); color: var(--text);
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .file:hover { text-decoration: none; background: rgb(19 143 250 / 12%); border-color: rgb(19 143 250 / 40%); }
+  .file.recommended { border-color: rgb(19 143 250 / 55%); background: rgb(19 143 250 / 10%); }
+  .file .name { font-weight: 600; font-size: 15px; }
+  .file .meta { color: var(--text-3); font-size: 12px; }
+  .file .dl { margin-left: auto; color: var(--accent-2); display: flex; }
+  .file .dl svg { width: 20px; height: 20px; }
+  .file .tag { font-size: 11px; font-weight: 700; color: var(--accent-2); text-transform: uppercase; letter-spacing: .04em; }
+  .card .foot { margin-top: auto; font-size: 13px; color: var(--text-3); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .skeleton { height: 58px; border-radius: 12px; background: linear-gradient(90deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 8%), rgb(255 255 255 / 4%)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .tvlink {
+    margin: 0 0 16px; padding: 12px 14px; border-radius: 12px; background: rgb(48 209 88 / 8%);
+    border: 1px solid rgb(48 209 88 / 25%); font-size: 13px; color: var(--text-2);
+  }
+  .tvlink code { display: block; margin-top: 6px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text); word-break: break-all; }
+
+  /* Features */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 16px; }
+  .feature { background: var(--bg-2); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .feature .ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--accent-2); margin-bottom: 12px; }
+  .feature .ico svg { width: 20px; height: 20px; }
+  .feature h4 { margin: 0 0 6px; font-size: 17px; letter-spacing: -0.01em; }
+  .feature p { margin: 0; color: var(--text-2); font-size: 14.5px; }
+
+  /* Install */
+  .tabs { display: inline-flex; gap: 4px; background: var(--surface); border-radius: 999px; padding: 4px; margin-bottom: 22px; flex-wrap: wrap; }
+  .tabs button {
+    border: 0; background: none; color: var(--text-2); font: inherit; font-size: 14px; font-weight: 600;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { background: var(--surface-2); color: var(--text); }
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; max-width: 720px; }
+  .steps li { counter-increment: s; position: relative; padding: 14px 16px 14px 56px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; color: var(--text-2); }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 16px; top: 13px; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; display: grid; place-items: center;
+  }
+  .steps b { color: var(--text); }
+  .steps code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: rgb(255 255 255 / 7%); padding: 2px 6px; border-radius: 6px; color: var(--text); word-break: break-all; }
+  .note { margin-top: 14px; font-size: 13px; color: var(--text-3); max-width: 720px; }
+
+  /* Privacy */
+  .pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 14.5px; }
+  .pill svg { width: 16px; height: 16px; color: var(--ok); }
+
+  footer { padding: 40px 0 56px; border-top: 1px solid var(--line); color: var(--text-3); font-size: 13px; }
+  footer .wrap { display: grid; gap: 10px; }
+  footer p { margin: 0; max-width: 780px; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/favicon.png" alt="" width="28" height="28">KAM IPTV</a>
+    <nav>
+      <a href="#download" data-i18n="nav.download"></a>
+      <a href="#features" class="hide-sm" data-i18n="nav.features"></a>
+      <a href="#install" class="hide-sm" data-i18n="nav.install"></a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="tr">TR</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <img class="icon" src="assets/icon-256.png" alt="KAM IPTV" width="120" height="120">
+      <h1>KAM IPTV</h1>
+      <p class="lead" data-i18n="hero.lead"></p>
+      <div class="cta" id="hero-cta">
+        <a class="btn primary" href="#download" data-i18n="hero.download"></a>
+      </div>
+      <p class="hint" id="hero-hint"></p>
+      <div class="byo">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span data-i18n="hero.byo"></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="wrap">
+      <h2 data-i18n="dl.title"></h2>
+      <p class="sub" data-i18n="dl.sub"></p>
+      <div class="apps">
+        <article class="card" aria-labelledby="desk-title">
+          <div class="head">
+            <div class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+            <div>
+              <h3 id="desk-title">KAM IPTV Player</h3>
+              <div class="platforms">macOS · Windows</div>
+            </div>
+          </div>
+          <p data-i18n="dl.desktop"></p>
+          <ul class="files" id="files-desktop"><li class="skeleton"></li><li class="skeleton"></li></ul>
+          <div class="foot" id="foot-desktop"></div>
+        </article>
+
+        <article class="card" aria-labelledby="android-title">
+          <div class="head">
+            <div class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M7 21h10"/><rect x="15.5" y="9" width="5" height="9" rx="1.2" fill="var(--surface)"/></svg></div>
+            <div>
+              <h3 id="android-title" data-i18n="dl.androidTitle"></h3>
+              <div class="platforms" data-i18n="dl.androidPlatforms"></div>
+            </div>
+          </div>
+          <p data-i18n="dl.android"></p>
+          <div class="tvlink"><span data-i18n="dl.tvlink"></span><code>https://github.com/denizgokce/kam-iptv-android-releases/releases/latest/download/kam-iptv-tv.apk</code></div>
+          <ul class="files" id="files-android"><li class="skeleton"></li><li class="skeleton"></li><li class="skeleton"></li></ul>
+          <div class="foot" id="foot-android"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <h2 data-i18n="ft.title"></h2>
+      <p class="sub" data-i18n="ft.sub"></p>
+      <div class="features">
+        <div class="feature"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><h4 data-i18n="ft.1.t"></h4><p data-i18n="ft.1.d"></p></div>
+        <div class="feature"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div><h4 data-i18n="ft.2.t"></h4><p data-i18n="ft.2.d"></p></div>
+        <div class="feature"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></div><h4 data-i18n="ft.3.t"></h4><p data-i18n="ft.3.d"></p></div>
+        <div class="feature"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></div><h4 data-i18n="ft.4.t"></h4><p data-i18n="ft.4.d"></p></div>
+        <div class="feature"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg></div><h4 data-i18n="ft.5.t"></h4><p data-i18n="ft.5.d"></p></div>
+        <div class="feature"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="13" rx="2"/><path d="M12 9v5M9.5 11.5h5"/></svg></div><h4 data-i18n="ft.6.t"></h4><p data-i18n="ft.6.d"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <h2 data-i18n="in.title"></h2>
+      <p class="sub" data-i18n="in.sub"></p>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-mac" aria-controls="pane-mac" data-tab="mac">macOS</button>
+        <button type="button" role="tab" id="tab-win" aria-controls="pane-win" data-tab="win">Windows</button>
+        <button type="button" role="tab" id="tab-tv" aria-controls="pane-tv" data-tab="tv">Android TV</button>
+        <button type="button" role="tab" id="tab-phone" aria-controls="pane-phone" data-tab="phone" data-i18n="in.tab.phone"></button>
+      </div>
+      <div role="tabpanel" id="pane-mac" aria-labelledby="tab-mac">
+        <ol class="steps"><li data-i18n-html="in.mac.1"></li><li data-i18n-html="in.mac.2"></li><li data-i18n-html="in.mac.3"></li></ol>
+        <p class="note" data-i18n-html="in.mac.note"></p>
+      </div>
+      <div role="tabpanel" id="pane-win" aria-labelledby="tab-win" hidden>
+        <ol class="steps"><li data-i18n-html="in.win.1"></li><li data-i18n-html="in.win.2"></li></ol>
+        <p class="note" data-i18n="in.win.note"></p>
+      </div>
+      <div role="tabpanel" id="pane-tv" aria-labelledby="tab-tv" hidden>
+        <ol class="steps"><li data-i18n-html="in.tv.1"></li><li data-i18n-html="in.tv.2"></li><li data-i18n-html="in.tv.3"></li></ol>
+        <p class="note" data-i18n-html="in.tv.note"></p>
+      </div>
+      <div role="tabpanel" id="pane-phone" aria-labelledby="tab-phone" hidden>
+        <ol class="steps"><li data-i18n-html="in.phone.1"></li><li data-i18n-html="in.phone.2"></li><li data-i18n-html="in.phone.3"></li></ol>
+        <p class="note" data-i18n="in.update"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <h2 data-i18n="pv.title"></h2>
+      <p class="sub" data-i18n="pv.sub"></p>
+      <div class="pills">
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="pv.1"></span></span>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="pv.2"></span></span>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="pv.3"></span></span>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="pv.4"></span></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p data-i18n="ft.disclaimer"></p>
+    <p><span data-i18n="ft.more"></span> <a href="https://github.com/denizgokce/kam-iptv-player-releases">KAM IPTV Player</a> · <a href="https://github.com/denizgokce/kam-iptv-android-releases" data-i18n="dl.androidTitle"></a> · <a href="https://github.com/denizgokce/kam-iptv-player-releases/blob/main/DISCLAIMER.md" data-i18n="ft.disclaimerLink"></a></p>
+    <p>© 2026 the KAM IPTV authors. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  // ── Strings ───────────────────────────────────────────────────────────
+  const I18N = {
+    en: {
+      'nav.download': 'Download', 'nav.features': 'Features', 'nav.install': 'Install',
+      'hero.lead': 'An IPTV player for Mac, Windows, Android phones and tablets, and Android TV. Fast to browse, made for the remote, and kind to your provider account.',
+      'hero.download': 'Download', 'hero.byo': 'Bring your own playlist — no channels or content are included.',
+      'hero.for': 'Download for {p}', 'hero.other': 'Other platforms',
+      'hint.mac': 'For Macs with Apple silicon (M1 or later).', 'hint.win': 'Windows 10 or 11, 64-bit.', 'hint.android': 'Android 7.0 or later.',
+      'dl.title': 'Download', 'dl.sub': 'The newest version of each app. Installers only — pick the file for your device.',
+      'dl.desktop': 'For your Mac or Windows PC: a large-screen catalogue with search across every name a film is known by, your own playlists, picture-in-picture and a built-in FFmpeg for files other players refuse.',
+      'dl.androidTitle': 'KAM IPTV for Android', 'dl.androidPlatforms': 'Android TV · tablet · phone',
+      'dl.android': 'For TV boxes, tablets and phones: an interface of its own for the remote, a Simple view with one press to play, and offline downloads.',
+      'dl.tvlink': 'On a TV, type this into the Downloader app — it always gets the newest TV build:',
+      'f.dmg': 'macOS', 'f.dmgMeta': 'Apple silicon · .dmg', 'f.exe': 'Windows', 'f.exeMeta': '64-bit · installer .exe',
+      'f.tv': 'Android TV', 'f.tvMeta': 'TV boxes, Chromecast, Fire TV · .apk', 'f.tablet': 'Tablet', 'f.tabletMeta': '.apk', 'f.phone': 'Phone', 'f.phoneMeta': '64-bit · .apk',
+      'f.recommended': 'For this device',
+      'foot.version': 'Version {v}', 'foot.date': 'Released {d}', 'foot.notes': 'Release notes', 'foot.all': 'All versions',
+      'foot.offline': 'Could not reach GitHub — the links open the latest release.',
+      'ft.title': 'Made for the way you actually watch', 'ft.sub': 'Everything works the same on every screen, from a Mac to a Mi Box.',
+      'ft.1.t': 'Your provider, your way', 'ft.1.d': 'Sign in with your provider’s account details, or load an M3U / M3U8 file or address. Lists refresh only when you ask.',
+      'ft.2.t': 'Search that finds it', 'ft.2.d': 'Typo-tolerant search across everything — and a film is found under any of its names: *Akıl Oyunları* finds *A Beautiful Mind*.',
+      'ft.3.t': 'Tidy hundreds of folders', 'ft.3.d': 'Group the provider’s folders yourself, star the ones you use, and save filter chips like “HD but not FHD”.',
+      'ft.4.t': 'Your own playlists', 'ft.4.d': 'Line up a whole franchise in the order you want to watch it and rearrange it by drag and drop (desktop).',
+      'ft.5.t': 'Playback that keeps going', 'ft.5.d': 'Several engines tried in turn, audio and subtitle choice, and live channels that recover by themselves when a provider drops the stream.',
+      'ft.6.t': 'Pick up where you left off', 'ft.6.d': 'Resume points, Continue Watching with the frame you left on, and titles marked watched when the credits roll.',
+      'in.title': 'Installing', 'in.sub': 'The apps are not in the App Store or Google Play, so your device asks once before the first install.',
+      'in.tab.phone': 'Phone & tablet',
+      'in.mac.1': 'Open the <b>.dmg</b> and drag <b>KAM IPTV Player</b> into <b>Applications</b>.',
+      'in.mac.2': 'The first time, <b>right-click the app → Open → Open</b>.',
+      'in.mac.3': 'After that it opens like any other app.',
+      'in.mac.note': 'The app is not notarised by Apple, which is why a plain double-click is refused the first time. If macOS still refuses, run once in Terminal: <code>xattr -dr com.apple.quarantine "/Applications/KAM IPTV Player.app"</code>',
+      'in.win.1': 'Run the <b>.exe</b> installer.',
+      'in.win.2': 'If SmartScreen says <b>“Windows protected your PC”</b>, choose <b>More info → Run anyway</b>.',
+      'in.win.note': 'The installer is not code-signed, which is why SmartScreen asks.',
+      'in.tv.1': 'Install <b>Downloader</b> (by AFTVnews) from the Play Store or Amazon Appstore.',
+      'in.tv.2': 'Enter <code>https://github.com/denizgokce/kam-iptv-android-releases/releases/latest/download/kam-iptv-tv.apk</code> and install.',
+      'in.tv.3': 'Allow Downloader to <b>install unknown apps</b> when asked.',
+      'in.tv.note': 'Or, from a computer with ADB: <code>adb install -r kam-iptv-tv.apk</code>. To update, install the new version over the old one — your playlists are kept.',
+      'in.phone.1': 'Download the <b>.apk</b> on the device and open it.',
+      'in.phone.2': 'When asked, allow your browser or file manager to <b>install unknown apps</b>.',
+      'in.phone.3': 'If Play Protect warns about an unknown developer, choose <b>Install anyway</b>.',
+      'in.update': 'To update, install the new version over the old one. Your playlists, favourites and history are kept.',
+      'pv.title': 'Private by default', 'pv.sub': 'What you watch stays on your device.',
+      'pv.1': 'No account', 'pv.2': 'No telemetry or analytics', 'pv.3': 'Playlists and logins stay on your device', 'pv.4': 'Metadata lookups can be switched off',
+      'ft.disclaimer': 'KAM IPTV is a media player. It does not include, sell, host or link to any channel, film, series, playlist or provider. Use it only with content and subscriptions you are legally allowed to access.',
+      'ft.more': 'More:', 'ft.disclaimerLink': 'Disclaimer',
+    },
+    tr: {
+      'nav.download': 'İndir', 'nav.features': 'Özellikler', 'nav.install': 'Kurulum',
+      'hero.lead': 'Mac, Windows, Android telefon ve tablet ile Android TV için IPTV oynatıcısı. Gezinmesi hızlı, kumanda için yapılmış ve sağlayıcı hesabını yormuyor.',
+      'hero.download': 'İndir', 'hero.byo': 'Listeni kendin getir — içinde kanal ya da içerik yok.',
+      'hero.for': '{p} için indir', 'hero.other': 'Diğer platformlar',
+      'hint.mac': 'Apple silicon\'lu Mac\'ler için (M1 ve sonrası).', 'hint.win': 'Windows 10 ya da 11, 64 bit.', 'hint.android': 'Android 7.0 ve sonrası.',
+      'dl.title': 'İndir', 'dl.sub': 'Her uygulamanın en yeni sürümü. Yalnız kurulum dosyaları — cihazına uyanı seç.',
+      'dl.desktop': 'Mac ya da Windows bilgisayarın için: büyük ekranda katalog, bir filmi bilinen her adıyla bulan arama, kendi oynatma listelerin, resim içinde resim ve başka oynatıcıların açamadığı dosyalar için yerleşik FFmpeg.',
+      'dl.androidTitle': 'Android için KAM IPTV', 'dl.androidPlatforms': 'Android TV · tablet · telefon',
+      'dl.android': 'TV kutuları, tabletler ve telefonlar için: kumandaya göre yapılmış kendi arayüzü, tek basışta oynatan Basit görünüm ve çevrimdışı indirme.',
+      'dl.tvlink': 'TV\'de bunu Downloader uygulamasına yaz — hep en yeni TV derlemesini getirir:',
+      'f.dmg': 'macOS', 'f.dmgMeta': 'Apple silicon · .dmg', 'f.exe': 'Windows', 'f.exeMeta': '64 bit · kurulum .exe',
+      'f.tv': 'Android TV', 'f.tvMeta': 'TV kutuları, Chromecast, Fire TV · .apk', 'f.tablet': 'Tablet', 'f.tabletMeta': '.apk', 'f.phone': 'Telefon', 'f.phoneMeta': '64 bit · .apk',
+      'f.recommended': 'Bu cihaz için',
+      'foot.version': 'Sürüm {v}', 'foot.date': '{d} yayımlandı', 'foot.notes': 'Sürüm notları', 'foot.all': 'Bütün sürümler',
+      'foot.offline': 'GitHub\'a ulaşılamadı — bağlantılar son sürümü açar.',
+      'ft.title': 'Gerçekten izlediğin gibi', 'ft.sub': 'Mac\'ten Mi Box\'a her ekranda aynı şekilde çalışır.',
+      'ft.1.t': 'Sağlayıcın, senin düzenin', 'ft.1.d': 'Sağlayıcının hesap bilgileriyle giriş yap ya da bir M3U / M3U8 dosyası veya adresi yükle. Listeler yalnız sen istediğinde yenilenir.',
+      'ft.2.t': 'Bulan arama', 'ft.2.d': 'Her şeyde, yazım hatalarına dayanıklı arama — ve bir film her adıyla bulunur: *A Beautiful Mind* yazınca *Akıl Oyunları* çıkar.',
+      'ft.3.t': 'Yüzlerce klasöre düzen', 'ft.3.d': 'Sağlayıcının klasörlerini kendin grupla, kullandıklarını yıldızla, "HD ama FHD değil" gibi süzgeç çipleri kaydet.',
+      'ft.4.t': 'Kendi oynatma listelerin', 'ft.4.d': 'Bütün bir seriyi izlemek istediğin sırayla diz, sürükle-bırakla yeniden düzenle (masaüstü).',
+      'ft.5.t': 'Durmayan oynatma', 'ft.5.d': 'Sırayla denenen birkaç motor, ses ve altyazı seçimi, ve sağlayıcı yayını kesince kendini toparlayan canlı kanallar.',
+      'ft.6.t': 'Kaldığın yerden devam', 'ft.6.d': 'Kaldığın yerler, kaldığın kareyle İzlemeye devam et, ve jenerik başlayınca izlendi işaretlenen başlıklar.',
+      'in.title': 'Kurulum', 'in.sub': 'Uygulamalar App Store\'da ya da Google Play\'de değil; cihazın ilk kurulumdan önce bir kez soruyor.',
+      'in.tab.phone': 'Telefon ve tablet',
+      'in.mac.1': '<b>.dmg</b> dosyasını aç ve <b>KAM IPTV Player</b>\'ı <b>Uygulamalar</b> klasörüne sürükle.',
+      'in.mac.2': 'İlk seferde <b>uygulamaya sağ tıkla → Aç → Aç</b>.',
+      'in.mac.3': 'Sonrasında her uygulama gibi açılır.',
+      'in.mac.note': 'Uygulama Apple tarafından onaylanmış değil; bu yüzden ilk seferde çift tıklamak reddedilir. macOS yine izin vermezse Terminal\'de bir kez çalıştır: <code>xattr -dr com.apple.quarantine "/Applications/KAM IPTV Player.app"</code>',
+      'in.win.1': '<b>.exe</b> kurulum dosyasını çalıştır.',
+      'in.win.2': 'SmartScreen <b>"Windows bilgisayarınızı korudu"</b> derse <b>Ek bilgi → Yine de çalıştır</b>\'ı seç.',
+      'in.win.note': 'Kurulum dosyası kod imzalı değil; SmartScreen\'in sormasının sebebi bu.',
+      'in.tv.1': 'Play Store\'dan ya da Amazon Appstore\'dan <b>Downloader</b>\'ı (AFTVnews) kur.',
+      'in.tv.2': '<code>https://github.com/denizgokce/kam-iptv-android-releases/releases/latest/download/kam-iptv-tv.apk</code> adresini yaz ve kur.',
+      'in.tv.3': 'Sorulunca Downloader\'a <b>bilinmeyen uygulamaları yükleme</b> izni ver.',
+      'in.tv.note': 'Ya da ADB olan bir bilgisayardan: <code>adb install -r kam-iptv-tv.apk</code>. Güncellemek için yeni sürümü eskisinin üstüne kur — listelerin korunur.',
+      'in.phone.1': '<b>.apk</b> dosyasını cihazda indir ve aç.',
+      'in.phone.2': 'Sorulunca tarayıcına ya da dosya yöneticine <b>bilinmeyen uygulamaları yükleme</b> izni ver.',
+      'in.phone.3': 'Play Protect bilinmeyen geliştirici uyarısı verirse <b>Yine de yükle</b>\'yi seç.',
+      'in.update': 'Güncellemek için yeni sürümü eskisinin üstüne kur. Listelerin, favorilerin ve geçmişin korunur.',
+      'pv.title': 'Varsayılan olarak gizli', 'pv.sub': 'Ne izlediğin cihazında kalır.',
+      'pv.1': 'Hesap yok', 'pv.2': 'Telemetri ya da analitik yok', 'pv.3': 'Listeler ve girişler cihazında kalır', 'pv.4': 'Künye aramaları kapatılabilir',
+      'ft.disclaimer': 'KAM IPTV bir medya oynatıcısıdır. Hiçbir kanalı, filmi, diziyi, listeyi ya da sağlayıcıyı içermez, satmaz, barındırmaz, bağlantısını vermez. Yalnız yasal olarak erişebildiğin içerik ve aboneliklerle kullan.',
+      'ft.more': 'Ayrıca:', 'ft.disclaimerLink': 'Sorumluluk reddi',
+    },
+    de: {
+      'nav.download': 'Download', 'nav.features': 'Funktionen', 'nav.install': 'Installation',
+      'hero.lead': 'Ein IPTV-Player für Mac, Windows, Android-Smartphones und -Tablets sowie Android TV. Schnell zu durchstöbern, für die Fernbedienung gemacht und schonend für dein Anbieterkonto.',
+      'hero.download': 'Herunterladen', 'hero.byo': 'Bring deine eigene Playlist mit – Sender oder Inhalte sind nicht enthalten.',
+      'hero.for': 'Für {p} herunterladen', 'hero.other': 'Andere Plattformen',
+      'hint.mac': 'Für Macs mit Apple-Chip (M1 oder neuer).', 'hint.win': 'Windows 10 oder 11, 64 Bit.', 'hint.android': 'Android 7.0 oder neuer.',
+      'dl.title': 'Download', 'dl.sub': 'Die neueste Version jeder App. Nur Installationsdateien – wähle die Datei für dein Gerät.',
+      'dl.desktop': 'Für Mac oder Windows-PC: ein Katalog für den großen Bildschirm, eine Suche, die Filme unter jedem ihrer Namen findet, eigene Playlists, Bild-in-Bild und ein eingebautes FFmpeg für Dateien, die andere Player ablehnen.',
+      'dl.androidTitle': 'KAM IPTV für Android', 'dl.androidPlatforms': 'Android TV · Tablet · Smartphone',
+      'dl.android': 'Für TV-Boxen, Tablets und Smartphones: eine eigene Oberfläche für die Fernbedienung, eine einfache Ansicht mit einem Druck zum Abspielen und Offline-Downloads.',
+      'dl.tvlink': 'Auf dem TV in die Downloader-App eingeben – lädt immer den neuesten TV-Build:',
+      'f.dmg': 'macOS', 'f.dmgMeta': 'Apple-Chip · .dmg', 'f.exe': 'Windows', 'f.exeMeta': '64 Bit · Installer .exe',
+      'f.tv': 'Android TV', 'f.tvMeta': 'TV-Boxen, Chromecast, Fire TV · .apk', 'f.tablet': 'Tablet', 'f.tabletMeta': '.apk', 'f.phone': 'Smartphone', 'f.phoneMeta': '64 Bit · .apk',
+      'f.recommended': 'Für dieses Gerät',
+      'foot.version': 'Version {v}', 'foot.date': 'Veröffentlicht am {d}', 'foot.notes': 'Versionshinweise', 'foot.all': 'Alle Versionen',
+      'foot.offline': 'GitHub nicht erreichbar – die Links öffnen die neueste Version.',
+      'ft.title': 'Gemacht dafür, wie du wirklich schaust', 'ft.sub': 'Alles funktioniert auf jedem Bildschirm gleich, vom Mac bis zur Mi Box.',
+      'ft.1.t': 'Dein Anbieter, deine Ordnung', 'ft.1.d': 'Melde dich mit den Zugangsdaten deines Anbieters an oder lade eine M3U-/M3U8-Datei oder -Adresse. Listen werden nur aktualisiert, wenn du willst.',
+      'ft.2.t': 'Eine Suche, die findet', 'ft.2.d': 'Fehlertolerante Suche über alles – und ein Film wird unter jedem seiner Namen gefunden: *Akıl Oyunları* findet *A Beautiful Mind*.',
+      'ft.3.t': 'Ordnung in hunderten Ordnern', 'ft.3.d': 'Gruppiere die Ordner deines Anbieters selbst, markiere die genutzten und speichere Filter-Chips wie „HD, aber nicht FHD“.',
+      'ft.4.t': 'Eigene Playlists', 'ft.4.d': 'Stell eine ganze Filmreihe in deiner Wunschreihenfolge zusammen und sortiere sie per Drag & Drop (Desktop).',
+      'ft.5.t': 'Wiedergabe, die weiterläuft', 'ft.5.d': 'Mehrere Engines nacheinander, Audio- und Untertitelauswahl und Live-Sender, die sich selbst erholen, wenn der Anbieter den Stream abbricht.',
+      'ft.6.t': 'Weiter, wo du warst', 'ft.6.d': 'Fortsetzungspunkte, Weiterschauen mit dem letzten Bild und Titel, die beim Abspann als gesehen markiert werden.',
+      'in.title': 'Installation', 'in.sub': 'Die Apps sind nicht im App Store oder bei Google Play, daher fragt dein Gerät vor der ersten Installation einmal nach.',
+      'in.tab.phone': 'Smartphone & Tablet',
+      'in.mac.1': 'Öffne die <b>.dmg</b> und ziehe <b>KAM IPTV Player</b> in <b>Programme</b>.',
+      'in.mac.2': 'Beim ersten Mal: <b>Rechtsklick auf die App → Öffnen → Öffnen</b>.',
+      'in.mac.3': 'Danach öffnet sie sich wie jede andere App.',
+      'in.mac.note': 'Die App ist nicht von Apple notarisiert, deshalb wird ein Doppelklick beim ersten Mal abgelehnt. Lehnt macOS weiterhin ab, einmal im Terminal ausführen: <code>xattr -dr com.apple.quarantine "/Applications/KAM IPTV Player.app"</code>',
+      'in.win.1': 'Starte die <b>.exe</b>-Installationsdatei.',
+      'in.win.2': 'Meldet SmartScreen <b>„Der Computer wurde durch Windows geschützt“</b>, wähle <b>Weitere Informationen → Trotzdem ausführen</b>.',
+      'in.win.note': 'Die Installationsdatei ist nicht codesigniert; deshalb fragt SmartScreen nach.',
+      'in.tv.1': 'Installiere <b>Downloader</b> (von AFTVnews) aus dem Play Store oder dem Amazon Appstore.',
+      'in.tv.2': 'Gib <code>https://github.com/denizgokce/kam-iptv-android-releases/releases/latest/download/kam-iptv-tv.apk</code> ein und installiere.',
+      'in.tv.3': 'Erlaube Downloader auf Nachfrage, <b>unbekannte Apps zu installieren</b>.',
+      'in.tv.note': 'Oder von einem Rechner mit ADB: <code>adb install -r kam-iptv-tv.apk</code>. Zum Aktualisieren die neue Version über die alte installieren – Playlists bleiben erhalten.',
+      'in.phone.1': 'Lade die <b>.apk</b> auf dem Gerät herunter und öffne sie.',
+      'in.phone.2': 'Erlaube deinem Browser bzw. Dateimanager auf Nachfrage, <b>unbekannte Apps zu installieren</b>.',
+      'in.phone.3': 'Warnt Play Protect vor einem unbekannten Entwickler, wähle <b>Trotzdem installieren</b>.',
+      'in.update': 'Zum Aktualisieren die neue Version über die alte installieren. Playlists, Favoriten und Verlauf bleiben erhalten.',
+      'pv.title': 'Privat von Anfang an', 'pv.sub': 'Was du schaust, bleibt auf deinem Gerät.',
+      'pv.1': 'Kein Konto', 'pv.2': 'Keine Telemetrie oder Analyse', 'pv.3': 'Playlists und Logins bleiben auf deinem Gerät', 'pv.4': 'Metadaten-Abfragen abschaltbar',
+      'ft.disclaimer': 'KAM IPTV ist ein Mediaplayer. Er enthält, verkauft, hostet oder verlinkt keine Sender, Filme, Serien, Playlists oder Anbieter. Nutze ihn nur mit Inhalten und Abonnements, auf die du rechtmäßig zugreifen darfst.',
+      'ft.more': 'Mehr:', 'ft.disclaimerLink': 'Haftungsausschluss',
+    },
+  };
+
+  const REPOS = {
+    desktop: 'denizgokce/kam-iptv-player-releases',
+    android: 'denizgokce/kam-iptv-android-releases',
+  };
+
+  // ── Language ──────────────────────────────────────────────────────────
+  const store = {
+    get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  };
+  const pick = () => {
+    const saved = store.get('kam-site-lang');
+    if (saved && I18N[saved]) return saved;
+    const nav = (navigator.languages || [navigator.language || 'en']).map((l) => l.slice(0, 2).toLowerCase());
+    return nav.find((l) => I18N[l]) || 'en';
+  };
+  let lang = pick();
+  const t = (key, vars = {}) => {
+    const s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
+    return s.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : `{${k}}`));
+  };
+  // *word* → <em>; only in plain strings, so no user HTML ever reaches the page.
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const emph = (s) => esc(s).replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+  // ── Platform ──────────────────────────────────────────────────────────
+  const ua = navigator.userAgent || '';
+  const platform = /Android/i.test(ua)
+    ? (/TV|AFT|BRAVIA|SMART-TV|GoogleTV|Chromecast/i.test(ua) ? 'tv' : /Mobile/i.test(ua) ? 'phone' : 'tablet')
+    : /iPhone|iPad|iPod/i.test(ua) ? 'ios'
+    : /Mac/i.test(ua) ? 'mac'
+    : /Win/i.test(ua) ? 'win'
+    : 'other';
+
+  // ── Releases ──────────────────────────────────────────────────────────
+  // Only installers: GitHub's "Source code" archives are not assets and are
+  // never listed; SHA256SUMS.txt and anything else is skipped too.
+  const KINDS = [
+    { repo: 'desktop', match: /\.dmg$/i, key: 'dmg', device: 'mac' },
+    { repo: 'desktop', match: /\.exe$/i, key: 'exe', device: 'win' },
+    { repo: 'android', match: /tv\.apk$/i, key: 'tv', device: 'tv' },
+    { repo: 'android', match: /tablet\.apk$/i, key: 'tablet', device: 'tablet' },
+    { repo: 'android', match: /phone\.apk$/i, key: 'phone', device: 'phone' },
+  ];
+  // Without the API (offline, rate-limited): links that always work.
+  const FALLBACK = {
+    dmg: `https://github.com/${REPOS.desktop}/releases/latest`,
+    exe: `https://github.com/${REPOS.desktop}/releases/latest`,
+    tv: `https://github.com/${REPOS.android}/releases/latest/download/kam-iptv-tv.apk`,
+    tablet: `https://github.com/${REPOS.android}/releases/latest/download/kam-iptv-tablet.apk`,
+    phone: `https://github.com/${REPOS.android}/releases/latest/download/kam-iptv-phone.apk`,
+  };
+  const releases = { desktop: undefined, android: undefined };
+
+  const fetchLatest = async (repo) => {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch { return null; }
+  };
+
+  const mb = (bytes) => `${Math.round(bytes / 1048576)} MB`;
+  const day = (iso) => new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
+  const DL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>';
+
+  const filesFor = (repoKey) => {
+    const rel = releases[repoKey];
+    return KINDS.filter((k) => k.repo === repoKey).map((k) => {
+      const asset = rel && rel.assets ? rel.assets.find((a) => k.match.test(a.name)) : null;
+      return { ...k, url: asset ? asset.browser_download_url : FALLBACK[k.key], size: asset ? asset.size : null };
+    });
+  };
+
+  const renderCard = (repoKey) => {
+    const list = document.getElementById(`files-${repoKey}`);
+    const foot = document.getElementById(`foot-${repoKey}`);
+    const rel = releases[repoKey];
+    if (rel === undefined) return; // still loading
+    list.innerHTML = filesFor(repoKey).map((f) => {
+      const rec = f.device === platform;
+      const meta = [t(`f.${f.key}Meta`), f.size ? mb(f.size) : null].filter(Boolean).join(' · ');
+      return `<li><a class="file${rec ? ' recommended' : ''}" href="${esc(f.url)}">
+        <span><span class="name">${esc(t(`f.${f.key}`))}</span>${rec ? ` <span class="tag">${esc(t('f.recommended'))}</span>` : ''}<br><span class="meta">${esc(meta)}</span></span>
+        <span class="dl">${DL_ICON}</span></a></li>`;
+    }).join('');
+    const repo = REPOS[repoKey];
+    foot.innerHTML = rel
+      ? [
+          `<span>${esc(t('foot.version', { v: rel.tag_name.replace(/^v/, '') }))}</span>`,
+          rel.published_at ? `<span>${esc(t('foot.date', { d: day(rel.published_at) }))}</span>` : '',
+          `<a href="${esc(rel.html_url)}">${esc(t('foot.notes'))}</a>`,
+          `<a href="https://github.com/${repo}/releases">${esc(t('foot.all'))}</a>`,
+        ].join('')
+      : `<span>${esc(t('foot.offline'))}</span> <a href="https://github.com/${repo}/releases/latest">${esc(t('foot.notes'))}</a>`;
+  };
+
+  // Hero: one button for the device in your hand, the rest below.
+  const renderHero = () => {
+    const cta = document.getElementById('hero-cta');
+    const hint = document.getElementById('hero-hint');
+    const all = [...filesFor('desktop'), ...filesFor('android')];
+    const mine = all.find((f) => f.device === platform);
+    const name = { mac: 'macOS', win: 'Windows', tv: 'Android TV', tablet: t('f.tablet'), phone: 'Android' }[platform];
+    if (mine && (releases[mine.repo] !== undefined)) {
+      cta.innerHTML = `<a class="btn primary" href="${esc(mine.url)}">${DL_ICON}<span>${esc(t('hero.for', { p: name }))}</span>${mine.size ? ` <small>${esc(mb(mine.size))}</small>` : ''}</a>
+        <a class="btn" href="#download">${esc(t('hero.other'))}</a>`;
+      hint.textContent = t(platform === 'mac' ? 'hint.mac' : platform === 'win' ? 'hint.win' : 'hint.android');
+    } else {
+      cta.innerHTML = `<a class="btn primary" href="#download">${DL_ICON}<span>${esc(t('hero.download'))}</span></a>`;
+      hint.textContent = '';
+    }
+  };
+
+  // ── Tabs ──────────────────────────────────────────────────────────────
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  const select = (name) => tabs.forEach((b) => {
+    const on = b.dataset.tab === name;
+    b.setAttribute('aria-selected', String(on));
+    b.tabIndex = on ? 0 : -1;
+    document.getElementById(b.getAttribute('aria-controls')).hidden = !on;
+  });
+  tabs.forEach((b, i) => {
+    b.addEventListener('click', () => select(b.dataset.tab));
+    b.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus(); select(next.dataset.tab);
+    });
+  });
+  select({ mac: 'mac', win: 'win', tv: 'tv', tablet: 'phone', phone: 'phone' }[platform] || 'mac');
+
+  // ── Apply ─────────────────────────────────────────────────────────────
+  const apply = () => {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => { el.innerHTML = emph(t(el.dataset.i18n)); });
+    // Trusted strings from the table above (they carry <b>/<code>).
+    document.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml); });
+    document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    renderCard('desktop');
+    renderCard('android');
+    renderHero();
+  };
+  document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => {
+    lang = b.dataset.lang; store.set('kam-site-lang', lang); apply();
+  }));
+  apply();
+
+  Promise.all([fetchLatest(REPOS.desktop), fetchLatest(REPOS.android)]).then(([d, a]) => {
+    releases.desktop = d;
+    releases.android = a;
+    apply();
+  });
+})();
+</script>
+</body>
+</html>
